@@ -1,171 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Play, Eye, ThumbsUp, Database, Brain, Heart, Loader2 } from "lucide-react"
+import { Search, Play, Eye, ThumbsUp, Database, Loader2, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-
-const sampleVideoDatabase = [
-  {
-    id: 1,
-    title: "Mindfulness for Kids - Focus and Attention Training",
-    thumbnail: "/colorful-alphabet-letters.png",
-    duration: "8:45",
-    views: "1.2M",
-    likes: "35K",
-    channel: "Kids Mental Health Hub",
-    keywords: [
-      "mindfulness for kids",
-      "attention training",
-      "focus exercises",
-      "concentration improvement",
-      "calming activities",
-    ],
-    description: "Gentle mindfulness exercises to help children improve focus and attention span",
-    therapeuticCategory: "attention",
-    ageGroup: "5-12",
-    difficulty: "beginner",
-  },
-  {
-    id: 2,
-    title: "Breathing Exercises for Anxious Children",
-    thumbnail: "/peppa-pig-muddy-puddles.png",
-    duration: "6:12",
-    views: "2.1M",
-    likes: "48K",
-    channel: "Calm Kids Therapy",
-    keywords: [
-      "breathing exercises",
-      "anxiety relief",
-      "emotional regulation",
-      "stress management",
-      "calming techniques",
-    ],
-    description: "Simple breathing techniques to help children manage anxiety and improve emotional regulation",
-    therapeuticCategory: "emotional",
-    ageGroup: "4-10",
-    difficulty: "beginner",
-  },
-  {
-    id: 3,
-    title: "Interactive Memory Games for ADHD Kids",
-    thumbnail: "/colorful-bus-animation.png",
-    duration: "12:30",
-    views: "890K",
-    likes: "22K",
-    channel: "ADHD Support Center",
-    keywords: ["memory games", "adhd support", "cognitive training", "working memory", "attention deficit"],
-    description: "Engaging memory games designed specifically for children with ADHD",
-    therapeuticCategory: "cognitive",
-    ageGroup: "6-14",
-    difficulty: "intermediate",
-  },
-  {
-    id: 4,
-    title: "Yoga for Kids - Concentration and Balance",
-    thumbnail: "/colorful-numbers-learning.png",
-    duration: "15:23",
-    views: "1.5M",
-    likes: "41K",
-    channel: "Kids Yoga Studio",
-    keywords: ["kids yoga", "balance exercises", "body awareness", "concentration improvement", "physical therapy"],
-    description: "Gentle yoga poses to improve concentration, balance, and body awareness",
-    therapeuticCategory: "physical",
-    ageGroup: "5-12",
-    difficulty: "beginner",
-  },
-  {
-    id: 5,
-    title: "Social Skills Stories for Autism Spectrum",
-    thumbnail: "/three-little-pigs-bedtime.png",
-    duration: "10:15",
-    views: "750K",
-    likes: "18K",
-    channel: "Autism Family Support",
-    keywords: ["social skills", "autism support", "communication skills", "behavioral therapy", "social stories"],
-    description: "Interactive social stories to help children on the autism spectrum develop social skills",
-    therapeuticCategory: "social",
-    ageGroup: "4-12",
-    difficulty: "beginner",
-  },
-  {
-    id: 6,
-    title: "Sensory Processing Activities for Kids",
-    thumbnail: "/colorful-kids-party.png",
-    duration: "9:30",
-    views: "1.1M",
-    likes: "28K",
-    channel: "Sensory Kids Therapy",
-    keywords: ["sensory processing", "sensory activities", "tactile stimulation", "proprioception", "vestibular input"],
-    description: "Fun sensory activities to help children with sensory processing challenges",
-    therapeuticCategory: "sensory",
-    ageGroup: "3-10",
-    difficulty: "beginner",
-  },
-]
-
-const therapeuticKeywords = [
-  // Attention & Focus
-  "attention training",
-  "focus exercises",
-  "concentration improvement",
-  "mindfulness for kids",
-  "meditation for children",
-  "attention deficit support",
-  "adhd activities",
-  "working memory games",
-
-  // Emotional Regulation
-  "emotional regulation",
-  "anxiety relief",
-  "stress management",
-  "calming techniques",
-  "breathing exercises",
-  "emotional intelligence",
-  "mood regulation",
-  "self-soothing",
-
-  // Cognitive Development
-  "cognitive training",
-  "memory games",
-  "problem solving skills",
-  "executive function",
-  "brain training",
-  "cognitive behavioral therapy",
-  "thinking skills",
-  "mental flexibility",
-
-  // Social & Communication
-  "social skills",
-  "communication skills",
-  "autism support",
-  "social stories",
-  "peer interaction",
-  "friendship skills",
-  "behavioral therapy",
-  "social anxiety",
-
-  // Physical & Sensory
-  "sensory processing",
-  "sensory activities",
-  "kids yoga",
-  "balance exercises",
-  "motor skills",
-  "body awareness",
-  "proprioception",
-  "vestibular input",
-
-  // Sleep & Routine
-  "sleep hygiene",
-  "bedtime routine",
-  "relaxation techniques",
-  "sleep disorders",
-  "calming activities",
-  "transition activities",
-  "routine building",
-]
 
 // Fuzzy matching function using Levenshtein distance
 function levenshteinDistance(str1: string, str2: string): number {
@@ -192,47 +32,27 @@ function levenshteinDistance(str1: string, str2: string): number {
   return matrix[str2.length][str1.length]
 }
 
-function therapeuticFuzzySearch(query: string, videos: any[]): any[] {
+function fuzzySearch(query: string, videos: any[]): any[] {
   if (!query.trim()) return videos
 
   const queryLower = query.toLowerCase()
 
-  // Therapeutic keywords that get priority scoring
-  const therapeuticTerms = [
-    "adhd",
-    "autism",
-    "anxiety",
-    "focus",
-    "attention",
-    "concentration",
-    "mindfulness",
-    "therapy",
-    "behavioral",
-    "emotional",
-    "sensory",
-    "cognitive",
-    "social skills",
-  ]
-
   return videos
     .map((video) => {
       let maxScore = 0
-      let therapeuticBonus = 0
 
-      // Check if query contains therapeutic terms
-      const hasTherapeuticTerm = therapeuticTerms.some((term) => queryLower.includes(term) || term.includes(queryLower))
-
-      // Title similarity with therapeutic bonus
+      // Title similarity
       const titleScore =
         1 - levenshteinDistance(queryLower, video.title.toLowerCase()) / Math.max(queryLower.length, video.title.length)
       maxScore = Math.max(maxScore, titleScore)
 
-      // Therapeutic category bonus
-      if (video.therapeuticCategory && hasTherapeuticTerm) {
-        therapeuticBonus += 0.3
-      }
+      // Channel similarity
+      const channelScore =
+        1 -
+        levenshteinDistance(queryLower, video.channel.toLowerCase()) / Math.max(queryLower.length, video.channel.length)
+      maxScore = Math.max(maxScore, channelScore * 0.7) // Channel match is less important
 
-      // Enhanced keyword matching with therapeutic priority
+      // Keyword matching
       if (video.keywords && Array.isArray(video.keywords)) {
         video.keywords.forEach((keyword: string) => {
           const keywordScore =
@@ -243,34 +63,78 @@ function therapeuticFuzzySearch(query: string, videos: any[]): any[] {
           if (keyword.toLowerCase().includes(queryLower) || queryLower.includes(keyword.toLowerCase())) {
             maxScore = Math.max(maxScore, 0.8)
           }
-
-          // Therapeutic keyword bonus
-          if (therapeuticTerms.some((term) => keyword.toLowerCase().includes(term))) {
-            therapeuticBonus += 0.2
-          }
         })
       }
 
-      // Age appropriateness bonus (if age info available)
-      if (video.ageGroup && queryLower.includes("age")) {
-        therapeuticBonus += 0.1
-      }
-
-      return { ...video, score: maxScore + therapeuticBonus }
+      return { ...video, score: maxScore }
     })
-    .filter((video) => video.score > 0.25) // Slightly lower threshold for therapeutic content
+    .filter((video) => video.score > 0.3)
     .sort((a, b) => b.score - a.score)
 }
 
-export default function TherapeuticRecommendationSystem() {
-  const [videoDatabase, setVideoDatabase] = useState(sampleVideoDatabase)
-  const [allKeywords, setAllKeywords] = useState(therapeuticKeywords)
-  const [isUsingCustomData, setIsUsingCustomData] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+function VideoPlayer({ video, onClose }: { video: any; onClose: () => void }) {
+  if (!video) return null
+
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string) => {
+    const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
+    const match = url.match(regex)
+    return match ? match[1] : null
+  }
+
+  const videoId = getYouTubeVideoId(video.url)
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold line-clamp-1">{video.title}</h2>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="aspect-video">
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <p className="text-muted-foreground">Video cannot be played</p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4">
+          <p className="text-sm text-muted-foreground mb-2">{video.channel}</p>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Eye className="w-4 h-4" />
+              {video.views} views
+            </div>
+            <div className="flex items-center gap-1">
+              <ThumbsUp className="w-4 h-4" />
+              {video.likes} likes
+            </div>
+            <span>{video.duration}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function RecommendationSystem() {
+  const [videoDatabase, setVideoDatabase] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [filteredVideos, setFilteredVideos] = useState(videoDatabase)
-  const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [filteredVideos, setFilteredVideos] = useState<any[]>([])
+  const [selectedVideo, setSelectedVideo] = useState<any>(null)
 
   const loadDatasetFromBackend = async () => {
     setIsLoading(true)
@@ -284,23 +148,6 @@ export default function TherapeuticRecommendationSystem() {
       console.log("[v0] Loaded dataset from backend:", data.videos.length, "videos")
 
       setVideoDatabase(data.videos)
-      setIsUsingCustomData(true)
-
-      // Extract keywords from loaded data
-      const extractedKeywords = new Set<string>()
-      data.videos.forEach((video: any) => {
-        if (video.keywords && Array.isArray(video.keywords)) {
-          video.keywords.forEach((keyword: string) => {
-            if (keyword && keyword.trim()) {
-              extractedKeywords.add(keyword.trim().toLowerCase())
-            }
-          })
-        }
-      })
-
-      const newKeywords = Array.from(extractedKeywords)
-      setAllKeywords(newKeywords.length > 0 ? [...therapeuticKeywords, ...newKeywords] : therapeuticKeywords)
-      setSelectedKeyword(null)
       setSearchQuery("")
     } catch (error) {
       console.error("Error loading dataset:", error)
@@ -314,118 +161,53 @@ export default function TherapeuticRecommendationSystem() {
     loadDatasetFromBackend()
   }, [])
 
-  const detectTherapeuticCategory = (title: string, keywords: any) => {
-    const titleLower = title.toLowerCase()
-    const keywordStr = Array.isArray(keywords) ? keywords.join(" ").toLowerCase() : ""
-    const combined = titleLower + " " + keywordStr
-
-    if (combined.includes("adhd") || combined.includes("attention") || combined.includes("focus")) return "attention"
-    if (combined.includes("anxiety") || combined.includes("emotional") || combined.includes("mood")) return "emotional"
-    if (combined.includes("memory") || combined.includes("cognitive") || combined.includes("brain")) return "cognitive"
-    if (combined.includes("social") || combined.includes("autism") || combined.includes("communication"))
-      return "social"
-    if (combined.includes("sensory") || combined.includes("yoga") || combined.includes("movement")) return "physical"
-    return "general"
-  }
-
-  const extractAgeGroup = (text: string) => {
-    const agePatternsMap = {
-      "2-5": /toddler|preschool|2-5|ages 2|ages 3|ages 4|ages 5/i,
-      "5-8": /kindergarten|5-8|ages 5|ages 6|ages 7|ages 8/i,
-      "8-12": /elementary|8-12|ages 8|ages 9|ages 10|ages 11|ages 12/i,
-      "12+": /teen|adolescent|12\+|ages 12|ages 13|ages 14|ages 15/i,
-    }
-
-    for (const [range, pattern] of Object.entries(agePatternsMap)) {
-      if (pattern.test(text)) return range
-    }
-    return "5-12" // default
-  }
-
-  const assessDifficulty = (title: string, keywords: any) => {
-    const combined = (title + " " + (Array.isArray(keywords) ? keywords.join(" ") : "")).toLowerCase()
-
-    if (combined.includes("advanced") || combined.includes("complex") || combined.includes("intermediate"))
-      return "intermediate"
-    if (combined.includes("beginner") || combined.includes("simple") || combined.includes("basic")) return "beginner"
-    return "beginner" // default to beginner for therapeutic content
-  }
-
   useEffect(() => {
-    if (selectedKeyword) {
-      const keywordFiltered = videoDatabase.filter(
-        (video) =>
-          video.keywords &&
-          video.keywords.some((keyword: string) => keyword.toLowerCase().includes(selectedKeyword.toLowerCase())),
-      )
-      setFilteredVideos(keywordFiltered)
-    } else if (selectedCategory) {
-      const categoryFiltered = videoDatabase.filter((video) => video.therapeuticCategory === selectedCategory)
-      setFilteredVideos(categoryFiltered)
-    } else {
-      const results = therapeuticFuzzySearch(searchQuery, videoDatabase)
-      setFilteredVideos(results)
-    }
-  }, [searchQuery, selectedKeyword, selectedCategory, videoDatabase])
+    const results = fuzzySearch(searchQuery, videoDatabase)
+    setFilteredVideos(results)
+  }, [searchQuery, videoDatabase])
 
-  const resetToSampleData = () => {
-    setVideoDatabase(sampleVideoDatabase)
-    setAllKeywords(therapeuticKeywords)
-    setIsUsingCustomData(false)
-    setSelectedKeyword(null)
-    setSelectedCategory(null)
-    setSearchQuery("")
+  const formatViews = (views: string | number) => {
+    const num = typeof views === "string" ? Number.parseInt(views) || 0 : views
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    return num.toString()
   }
 
-  const handleKeywordClick = (keyword: string) => {
-    setSelectedKeyword(selectedKeyword === keyword ? null : keyword)
-    setSelectedCategory(null)
-    setSearchQuery("")
-  }
-
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(selectedCategory === category ? null : category)
-    setSelectedKeyword(null)
-    setSearchQuery("")
-  }
-
-  const formatViews = (views: string) => views
   const formatDuration = (duration: string) => duration
+
+  const getYouTubeThumbnail = (url: string) => {
+    const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
+    const match = url.match(regex)
+    if (match) {
+      return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`
+    }
+    return "/video-thumbnail.png"
+  }
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-border">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                <Brain className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+                <Play className="w-5 h-5 text-white fill-white" />
               </div>
-              <h1 className="text-xl font-bold">TherapyVids</h1>
+              <h1 className="text-xl font-bold">VideoRecommend</h1>
               <Badge variant="outline" className="text-xs">
-                <Heart className="w-3 h-3 mr-1" />
-                Child Wellness
+                <Database className="w-3 h-3 mr-1" />
+                CSV Dataset
               </Badge>
-              {isUsingCustomData && (
-                <Badge variant="secondary" className="ml-2">
-                  <Database className="w-3 h-3 mr-1" />
-                  Backend Dataset
-                </Badge>
-              )}
             </div>
 
             <div className="flex-1 max-w-2xl mx-auto">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Search therapeutic videos (e.g., 'ADHD focus', 'anxiety relief', 'social skills')..."
+                  placeholder="Search videos by title, channel, or keywords..."
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    setSelectedKeyword(null)
-                    setSelectedCategory(null)
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4"
                 />
               </div>
@@ -442,12 +224,6 @@ export default function TherapeuticRecommendationSystem() {
                   "Reload Dataset"
                 )}
               </Button>
-
-              {isUsingCustomData && (
-                <Button variant="outline" size="sm" onClick={resetToSampleData}>
-                  Use Sample Data
-                </Button>
-              )}
             </div>
           </div>
         </div>
@@ -458,90 +234,41 @@ export default function TherapeuticRecommendationSystem() {
         {isLoading && (
           <div className="text-center py-12">
             <Loader2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground animate-spin" />
-            <p className="text-muted-foreground text-lg">Loading therapeutic videos from dataset...</p>
+            <p className="text-muted-foreground text-lg">Loading videos from dataset...</p>
           </div>
         )}
 
         {!isLoading && (
           <>
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-3">Therapeutic Categories</h2>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {[
-                  { id: "attention", label: "Attention & Focus", color: "bg-blue-100 text-blue-800" },
-                  { id: "emotional", label: "Emotional Regulation", color: "bg-green-100 text-green-800" },
-                  { id: "cognitive", label: "Cognitive Training", color: "bg-purple-100 text-purple-800" },
-                  { id: "social", label: "Social Skills", color: "bg-orange-100 text-orange-800" },
-                  { id: "physical", label: "Physical & Sensory", color: "bg-pink-100 text-pink-800" },
-                ].map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "secondary"}
-                    className={`cursor-pointer hover:opacity-80 transition-colors ${
-                      selectedCategory === category.id ? "" : category.color
-                    }`}
-                    onClick={() => handleCategoryClick(category.id)}
-                  >
-                    {category.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Keywords */}
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-3">Therapeutic Keywords</h2>
-              <div className="flex flex-wrap gap-2">
-                {allKeywords.slice(0, 20).map((keyword) => (
-                  <Badge
-                    key={keyword}
-                    variant={selectedKeyword === keyword ? "default" : "secondary"}
-                    className="cursor-pointer hover:bg-primary/80 transition-colors text-xs"
-                    onClick={() => handleKeywordClick(keyword)}
-                  >
-                    {keyword}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
             {/* Results Info */}
             <div className="mb-4">
               <p className="text-muted-foreground">
-                {selectedCategory
-                  ? `Showing ${selectedCategory} therapy videos`
-                  : selectedKeyword
-                    ? `Videos for "${selectedKeyword}"`
-                    : searchQuery
-                      ? `Therapeutic search results for "${searchQuery}"`
-                      : "Recommended therapeutic content"}{" "}
-                ({filteredVideos.length} videos)
-                {isUsingCustomData && <span className="ml-2 text-xs">• Using your custom dataset</span>}
+                {searchQuery ? `Search results for "${searchQuery}"` : "All videos"} ({filteredVideos.length} videos)
               </p>
             </div>
 
             {/* Video Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredVideos.map((video) => (
-                <Card key={video.id} className="group cursor-pointer hover:shadow-lg transition-shadow">
+                <Card
+                  key={video.id}
+                  className="group cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setSelectedVideo(video)}
+                >
                   <CardContent className="p-0">
                     <div className="relative">
                       <img
-                        src={video.thumbnail || "/placeholder.svg?height=200&width=300&query=therapeutic kids video"}
+                        src={getYouTubeThumbnail(video.url) || "/placeholder.svg"}
                         alt={video.title}
                         className="w-full h-48 object-cover rounded-t-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = "/video-thumbnail.png"
+                        }}
                       />
                       <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
                         {formatDuration(video.duration)}
                       </div>
-                      {video.therapeuticCategory && (
-                        <div className="absolute top-2 left-2">
-                          <Badge variant="secondary" className="text-xs bg-white/90 text-gray-800">
-                            {video.therapeuticCategory}
-                          </Badge>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-t-lg flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-t-lg flex items-center justify-center">
                         <Play className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity fill-white" />
                       </div>
                     </div>
@@ -553,19 +280,6 @@ export default function TherapeuticRecommendationSystem() {
 
                       <p className="text-xs text-muted-foreground mb-2">{video.channel}</p>
 
-                      <div className="flex items-center gap-2 mb-2">
-                        {video.ageGroup && (
-                          <Badge variant="outline" className="text-xs">
-                            Ages {video.ageGroup}
-                          </Badge>
-                        )}
-                        {video.difficulty && (
-                          <Badge variant="outline" className="text-xs">
-                            {video.difficulty}
-                          </Badge>
-                        )}
-                      </div>
-
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                         <div className="flex items-center gap-1">
                           <Eye className="w-3 h-3" />
@@ -573,7 +287,7 @@ export default function TherapeuticRecommendationSystem() {
                         </div>
                         <div className="flex items-center gap-1">
                           <ThumbsUp className="w-3 h-3" />
-                          {video.likes}
+                          {formatViews(video.likes)}
                         </div>
                       </div>
 
@@ -591,19 +305,20 @@ export default function TherapeuticRecommendationSystem() {
               ))}
             </div>
 
-            {filteredVideos.length === 0 && (
+            {filteredVideos.length === 0 && !isLoading && (
               <div className="text-center py-12">
-                <Brain className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground text-lg">No therapeutic videos found matching your search.</p>
+                <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground text-lg">No videos found matching your search.</p>
                 <p className="text-muted-foreground text-sm mt-2">
-                  Try searching for specific conditions like "ADHD", "anxiety", or browse our therapeutic categories
-                  above.
+                  Try different keywords or check if your dataset is loaded correctly.
                 </p>
               </div>
             )}
           </>
         )}
       </div>
+
+      {selectedVideo && <VideoPlayer video={selectedVideo} onClose={() => setSelectedVideo(null)} />}
     </div>
   )
 }
