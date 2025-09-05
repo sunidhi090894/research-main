@@ -124,6 +124,7 @@ export default function RecommendationSystem() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedVideo, setSelectedVideo] = useState<any>(null)
+  const [error, setError] = useState<string>("")
 
   const [debouncedQuery, setDebouncedQuery] = useState("")
 
@@ -141,19 +142,42 @@ export default function RecommendationSystem() {
 
   const loadDatasetFromBackend = useCallback(async () => {
     setIsLoading(true)
+    setError("")
+
     try {
+      console.log("[v0] Testing API connection...")
+
+      // First test if API is working at all
+      const testResponse = await fetch("/api/test")
+      if (!testResponse.ok) {
+        throw new Error("API server is not responding")
+      }
+
+      console.log("[v0] API test successful, loading dataset...")
+
+      // Now try to load the actual dataset
       const response = await fetch("/api/videos")
+
       if (!response.ok) {
-        throw new Error("Failed to load dataset")
+        const errorText = await response.text()
+        console.error("[v0] API response error:", response.status, errorText)
+        throw new Error(`Server error: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
+
+      if (!data.videos || !Array.isArray(data.videos)) {
+        throw new Error("Invalid data format received from server")
+      }
+
       console.log("[v0] Loaded dataset from backend:", data.videos.length, "videos")
       setVideoDatabase(data.videos)
       setSearchQuery("")
     } catch (error) {
-      console.error("Error loading dataset:", error)
-      alert("Failed to load dataset. Please check if the CSV file exists in the data folder.")
+      console.error("[v0] Error loading dataset:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+      setError(`Failed to load dataset: ${errorMessage}`)
+      setVideoDatabase([])
     } finally {
       setIsLoading(false)
     }
@@ -221,6 +245,27 @@ export default function RecommendationSystem() {
       </header>
 
       <div className="container mx-auto px-4 py-6">
+        {/* Error state */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-destructive mb-2">Error Loading Dataset</h3>
+            <p className="text-sm text-destructive/80 mb-3">{error}</p>
+            <div className="text-xs text-muted-foreground">
+              <p>Please ensure:</p>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>
+                  Your CSV file is placed at: <code>data/youtube_dataset.csv</code>
+                </li>
+                <li>The CSV file has the correct format with headers</li>
+                <li>The file is not corrupted or too large</li>
+              </ul>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadDatasetFromBackend} className="mt-3 bg-transparent">
+              Try Again
+            </Button>
+          </div>
+        )}
+
         {/* Loading state */}
         {isLoading && (
           <div className="text-center py-12">
@@ -229,7 +274,7 @@ export default function RecommendationSystem() {
           </div>
         )}
 
-        {!isLoading && (
+        {!isLoading && !error && (
           <>
             {searchQuery && (
               <div className="mb-6">
