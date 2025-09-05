@@ -75,7 +75,6 @@ export function CSVUploader({ onDataLoaded, expectedColumns }: CSVUploaderProps)
           row.summary ||
           row.Summary ||
           "Therapeutic video for children's wellness",
-        category: inferCategory(row.title, row.description),
         // Include all original CSV columns for flexibility
         ...row,
       }))
@@ -118,52 +117,6 @@ export function CSVUploader({ onDataLoaded, expectedColumns }: CSVUploaderProps)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
-  }
-
-  function inferCategory(title: string, description: string): string {
-    const text = `${title} ${description}`.toLowerCase()
-
-    if (
-      text.includes("learning") ||
-      text.includes("alphabet") ||
-      text.includes("numbers") ||
-      text.includes("phonics") ||
-      text.includes("attention") ||
-      text.includes("educational") ||
-      text.includes("abc") ||
-      text.includes("counting") ||
-      text.includes("math") ||
-      text.includes("reading") ||
-      text.includes("cognitive") ||
-      text.includes("development") ||
-      text.includes("concentration") ||
-      text.includes("focus") ||
-      text.includes("memory")
-    ) {
-      return "cognitive and development"
-    }
-
-    if (
-      text.includes("calming") ||
-      text.includes("aggression") ||
-      text.includes("emotional") ||
-      text.includes("hyperactivity") ||
-      text.includes("relaxing") ||
-      text.includes("soothing") ||
-      text.includes("anxiety") ||
-      text.includes("stress") ||
-      text.includes("mindfulness") ||
-      text.includes("meditation") ||
-      text.includes("behavioral") ||
-      text.includes("social") ||
-      text.includes("empathy") ||
-      text.includes("feelings") ||
-      text.includes("mood")
-    ) {
-      return "behavioral and emotional"
-    }
-
-    return "general"
   }
 
   return (
