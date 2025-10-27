@@ -202,13 +202,13 @@ export default function RecommendationSystem() {
       const data = await response.json()
       console.log("[v0] Loaded dataset from backend:", data.videos.length, "videos")
 
+      // The API now performs server-side inference and adds `emotion_label` and
+      // `healthCategories` to each video when possible. Use those values if present.
       const enhancedVideos = data.videos.map((video: any) => {
-        // Use the new QSVC-simulated classification logic
-        const qsvcResult = getQSVCClassification(video)
         return {
           ...video,
-          healthCategories: qsvcResult.categories,
-          healthScore: qsvcResult.score, // Stored but not used for display/sorting/filtering as requested
+          healthCategories: video.healthCategories || (video.emotion_label ? [String(video.emotion_label).toUpperCase()] : undefined),
+          healthScore: video.healthScore || 0,
         }
       })
 

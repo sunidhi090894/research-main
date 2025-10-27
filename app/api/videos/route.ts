@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
 import { parse } from "csv-parse/sync"
+import { execFileSync } from "child_process"
 
 export async function GET() {
   try {
@@ -20,6 +21,7 @@ export async function GET() {
       skip_empty_lines: true,
     })
 
+    // Prepare videos array from CSV records
     const videos = records.map((record: any, index: number) => ({
       id: index + 1,
       title: record.title || record.Title || "",
@@ -34,7 +36,44 @@ export async function GET() {
       date: record.date || record.Date || record.publishedAt || "",
       keywords: extractKeywords(record.title || ""),
       description: record.description || record.Description || "",
+      // keep original row for flexibility and server-side inference
+      __original: record,
     }))
+
+    // Server-side inference: use subtitles column when available and call Python wrapper
+    try {
+      const subtitlesList = records.map((r: any) => {
+        return (
+          r.subtitles || r.Subtitles || r.transcript || r.Transcript || r.description || r.Description || ""
+        )
+      })
+
+      // Call the Python inference script in research/infer_emotion.py
+      // Pass the subtitles array as JSON via stdin and expect JSON array of labels back
+      const scriptPath = path.join(process.cwd(), "research", "infer_emotion.py")
+      const python = process.env.PYTHON || "python3"
+      const resultBuffer = execFileSync(python, [scriptPath], {
+        input: JSON.stringify(subtitlesList),
+        maxBuffer: 10 * 1024 * 1024, // 10MB
+      })
+      const out = resultBuffer.toString("utf-8").trim()
+      let labels: any[] = []
+      try {
+        labels = JSON.parse(out)
+      } catch (err) {
+        console.error("Failed to parse labels from Python script:", out)
+      }
+
+      // Attach labels to videos
+      videos.forEach((v: any, i: number) => {
+        const label = labels[i] || "neutral"
+        v.emotion_label = String(label)
+        v.healthCategories = [String(label).toUpperCase()]
+      })
+    } catch (err) {
+      // If python call fails, fallback: leave videos without emotion labels
+      console.error("Python inference failed:", err)
+    }
 
     return NextResponse.json({ videos, total: videos.length })
   } catch (error) {
