@@ -65,11 +65,7 @@ export async function GET() {
       }
 
       // Attach labels to videos
-      videos.forEach((v: any, i: number) => {
-        const label = labels[i] || "neutral"
-        v.emotion_label = String(label)
-        v.healthCategories = [String(label).toUpperCase()]
-      })
+      
     } catch (err) {
       // If python call fails, fallback: leave videos without emotion labels
       console.error("Python inference failed:", err)
