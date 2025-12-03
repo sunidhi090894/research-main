@@ -295,8 +295,8 @@ export default function RecommendationSystem() {
 
   useEffect(() => {
     // Define blocked keywords for fear and aggressive content
-    const fearKeywords = ['scary','terrifying','horror','nightmare','creepy','frightening','afraid','terror','panic','anxious','spooky','haunted','ghost','monster','scream','blood','death','dead','kill','dark','evil'];
-    const aggressiveKeywords = ['angry','hate','fight','violent','rage','furious','punch','destroy','attack','aggressive','war','weapon','shoot','explosion','bomb','gun','revenge','enemy','battle','combat'];
+    const fearKeywords = ["fear","scared","frightened","terrified","horrified","petrified","afraid","panicked","alarmed","anxious","uneasy","jittery","nervous","startled","worried","distressed","intimidated","shaken","spooked","appalled","scary","creepy","eerie","spooky","chilling","haunting","unsettling","disturbing","menacing","sinister","dark","ominous","foreboding","nightmare","nightmarish","monstrous","beast","demon","ghost","ghostly","phantom","ghastly","undead","zombie","vampire","witch","haunted","scream","shriek","blood","gore","dead","death","kill","lethal","fatal","morbid","gruesome","terror","panic","horror","dread","doom","despair"];
+    const aggressiveKeywords = [ "angry","mad","furious","enraged","irate","bitter","hostile","annoyed","frustrated","outraged","hate","fight","hit","punch","kick","strike","smack","beat","bash","attack","assault","ambush","destroy","wreck","demolish","smash","crush","harm","injure","violent","violence","rage","aggression","hostility","brutality","cruelty","weapon","gun","pistol","rifle","shoot","firing","blast","explosion","bomb","grenade","missile","war","battle","combat","enemy","conflict","clash","revenge","retaliate","vengeful","spiteful","threatening","confrontational"];
     const blockedKeywords = [...fearKeywords, ...aggressiveKeywords];
 
     // Block videos when searching for blocked keywords
